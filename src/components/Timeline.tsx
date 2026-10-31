@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import type { Week } from '../lib/time';
-import { REGION_COLOR } from './HackathonMap';
+import { REGION_COLOR, toUiRegion } from '../lib/regions';
 
 interface Props {
   weeks: Week[];
@@ -11,11 +11,13 @@ interface Props {
   windowWeeks: number;
   onWeekIndex: (i: number) => void;
   onWindowWeeks: (n: number) => void;
+  /** Small freshness / source label shown in the controls row. */
+  footnote?: string;
 }
 
 const WINDOW_OPTIONS = [1, 2, 4];
 
-export default function Timeline({ weeks, weekIndex, windowWeeks, onWeekIndex, onWindowWeeks }: Props) {
+export default function Timeline({ weeks, weekIndex, windowWeeks, onWeekIndex, onWindowWeeks, footnote }: Props) {
   const stripRef = useRef<HTMLDivElement>(null);
   const maxIndex = Math.max(0, weeks.length - windowWeeks);
 
@@ -25,10 +27,10 @@ export default function Timeline({ weeks, weekIndex, windowWeeks, onWeekIndex, o
     el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
   }, [weekIndex]);
 
-  // Arrow keys step the window; Home jumps to the current week.
+  // Arrow keys step the window; Home jumps to the current week. Ignored while typing.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === 'ArrowLeft') onWeekIndex(Math.max(0, weekIndex - 1));
       if (e.key === 'ArrowRight') onWeekIndex(Math.min(maxIndex, weekIndex + 1));
       if (e.key === 'Home') {
@@ -57,6 +59,7 @@ export default function Timeline({ weeks, weekIndex, windowWeeks, onWeekIndex, o
         <button className="btn" onClick={() => onWeekIndex(Math.min(maxIndex, weekIndex + 1))} disabled={weekIndex >= maxIndex} aria-label="Next week">
           ▶
         </button>
+        {footnote && <span className="footnote">{footnote}</span>}
         <span className="spacer" />
         <span className="label">Window</span>
         <div className="segmented">
@@ -72,21 +75,22 @@ export default function Timeline({ weeks, weekIndex, windowWeeks, onWeekIndex, o
         {weeks.map((w) => {
           const inWindow = w.index >= weekIndex && w.index < weekIndex + windowWeeks;
           const monthStart = w.start.getDate() <= 7;
+          const n = w.events.length;
           return (
             <button
               key={w.index}
               data-week={w.index}
-              className={['week', inWindow ? 'in-window' : '', w.isCurrent ? 'current' : '', w.hackathons.length ? 'has-events' : ''].join(' ')}
+              className={['week', inWindow ? 'in-window' : '', w.isCurrent ? 'current' : '', n ? 'has-events' : ''].join(' ')}
               onClick={() => onWeekIndex(Math.min(maxIndex, w.index))}
-              title={`${format(w.start, 'MMM d')} – ${format(w.end, 'MMM d')}: ${w.hackathons.length} hackathon${w.hackathons.length === 1 ? '' : 's'}`}
+              title={`${format(w.start, 'MMM d')} – ${format(w.end, 'MMM d')}: ${n} event${n === 1 ? '' : 's'}`}
             >
               <span className="week-month">{monthStart ? format(w.start, 'MMM') : ' '}</span>
               <span className="week-day">{format(w.start, 'd')}</span>
               <span className="week-dots">
-                {w.hackathons.slice(0, 6).map((h) => (
-                  <i key={h.id} style={{ background: REGION_COLOR[h.region] }} />
+                {w.events.slice(0, 6).map((e) => (
+                  <i key={e.id} style={{ background: REGION_COLOR[toUiRegion(e.region)] }} />
                 ))}
-                {w.hackathons.length > 6 && <em>+{w.hackathons.length - 6}</em>}
+                {n > 6 && <em>+{n - 6}</em>}
               </span>
             </button>
           );
