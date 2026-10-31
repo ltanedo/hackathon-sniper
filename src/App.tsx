@@ -65,7 +65,7 @@ export default function App() {
     <div className="app">
       <header className="header">
         <div className="brand">
-          <span className="brand-mark">◎</span>
+          <span className="brand-mark">⬤</span>
           <div>
             <h1>Hackathon Sniper</h1>
             <div className="sub">NYC · New Jersey · Long Island</div>

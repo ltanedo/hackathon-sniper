@@ -4,9 +4,9 @@ import type { Hackathon, Region } from '../types';
 import { formatEventDates } from '../lib/time';
 
 export const REGION_COLOR: Record<Region, string> = {
-  NYC: '#ff6b35',
-  NJ: '#4cc9f0',
-  LI: '#b5e853',
+  NYC: '#ea4335', // Google red
+  NJ: '#1a73e8', // Google blue
+  LI: '#34a853', // Google green
 };
 
 const CENTER: [number, number] = [40.72, -73.9];
@@ -46,12 +46,12 @@ export default function HackathonMap({ hackathons, selectedId, hoveredId, onSele
           <CircleMarker
             key={h.id}
             center={[h.lat, h.lng]}
-            radius={active ? 12 : 8}
+            radius={active ? 11 : 7}
             pathOptions={{
-              color: active ? '#fff' : color,
-              weight: active ? 3 : 2,
+              color: '#fff',
+              weight: active ? 3 : 1.5,
               fillColor: color,
-              fillOpacity: active ? 0.95 : 0.7,
+              fillOpacity: 1,
             }}
             eventHandlers={{
               click: () => onSelect(h.id),
